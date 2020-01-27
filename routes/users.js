@@ -145,7 +145,7 @@ router.get('/all.json', function (req, res) {
     'message': 'Internal server error'
   };
 
-  var queryString = "SELECT username, password, email, role, DATE_FORMAT(created_at, '%d-%m-%Y %T') as created_at, DATE_FORMAT(updated_at, '%d-%m-%Y %T') as updated_at FROM users";
+  var queryString = "SELECT id, username, password, email, role, DATE_FORMAT(created_at, '%d-%m-%Y %T') as created_at, DATE_FORMAT(updated_at, '%d-%m-%Y %T') as updated_at FROM users";
   var connection = getConnection();
 
   connection.query(queryString, function (err, rows, fields) {

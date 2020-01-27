@@ -33,11 +33,11 @@ router.post('/', function(req, res) {
         major = req.query.major,
         phoneNumber = req.query.phoneNumber,
         address = req.query.address,
-        usersId = req.query.usersId;
+        createdBy = req.query.createdBy;
 
-    var queryString = "INSERT INTO students (name, nrp, email, major, phone_number, address, users_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    var queryString = "INSERT INTO students (name, nrp, email, major, phone_number, address, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-    connection.query(queryString, [name, nrp, email, major, phoneNumber, address, usersId], function (err, results) {
+    connection.query(queryString, [name, nrp, email, major, phoneNumber, address, createdBy], function (err, results) {
         if (err) {
             res.json(msg);
         }
@@ -134,7 +134,7 @@ router.get('/all.json', function(req, res) {
         'message': 'Internal Server Error'
     };
 
-    var queryString = "SELECT students.id, name, nrp, students.email, major, phone_number, address, DATE_FORMAT(students.created_at, '%d-%m-%Y %T') as created_at, DATE_FORMAT(students.updated_at, '%d-%m-%Y %T') as updated_at, DATE_FORMAT(students.deleted_at, '%d-%m-%Y %T') as deleted_at, users.id as users_id, users.username as users_username FROM students JOIN users ON students.users_id = users.id WHERE students.deleted_at is null";
+    var queryString = "SELECT students.id, name, nrp, students.email, major, phone_number, address, DATE_FORMAT(students.created_at, '%d-%m-%Y %T') as created_at, DATE_FORMAT(students.updated_at, '%d-%m-%Y %T') as updated_at, DATE_FORMAT(students.deleted_at, '%d-%m-%Y %T') as deleted_at, users.id as created_by_id, users.username as created_by_username FROM students JOIN users ON students.created_by = users.id WHERE students.deleted_at is null";
 
     connection.query(queryString, function (err, rows) {
 
@@ -162,7 +162,7 @@ router.get('/findById.json', function(req, res, next) {
 
     var id = req.query.id;
 
-    var queryString = "SELECT id, name, nrp, email, major, phone_number, address, DATE_FORMAT(created_at, '%d-%m-%Y %T') as created_at, DATE_FORMAT(updated_at, '%d-%m-%Y %T') as updated_at, users_id FROM students WHERE id = ?";
+    var queryString = "SELECT id, name, nrp, email, major, phone_number, address, DATE_FORMAT(created_at, '%d-%m-%Y %T') as created_at, DATE_FORMAT(updated_at, '%d-%m-%Y %T') as updated_at, created_by FROM students WHERE id = ? AND deleted_at is null";
 
     connection.query(queryString, [id], function (err, rows) {
 
@@ -171,7 +171,7 @@ router.get('/findById.json', function(req, res, next) {
         }
 
         if (rows.length != 0) {
-            getUserById(rows[0].users_id, rows[0], res);
+            getUserById(rows[0].created_by, rows[0], res);
         } else {
             msg['status'] = 200;
             msg['message'] = 'Successfully fetch all data students';
@@ -214,7 +214,7 @@ function getUserById(userId, students, res) {
             'major': students.major,
             'phone_number': students.phone_number,
             'address': students.address,
-            'users': students.users,
+            'created_by': students.users,
             'created_at': students.created_at,
             'updated_at': students.updated_at
         };
@@ -238,7 +238,7 @@ router.get('/findByUsersId.json', function(req, res) {
 
     var usersId = req.query.usersId;
 
-    var queryString = "SELECT students.id, name, nrp, students.email, major, phone_number, address, DATE_FORMAT(students.created_at, '%d-%m-%Y %T') as created_at, DATE_FORMAT(students.updated_at, '%d-%m-%Y %T') as updated_at, DATE_FORMAT(students.deleted_at, '%d-%m-%Y %T') as deleted_at, users.id as users_id, users.username as users_username FROM students JOIN users ON users.id = students.users_id WHERE students.users_id = ? AND students.deleted_at is null";
+    var queryString = "SELECT students.id, name, nrp, students.email, major, phone_number, address, DATE_FORMAT(students.created_at, '%d-%m-%Y %T') as created_at, DATE_FORMAT(students.updated_at, '%d-%m-%Y %T') as updated_at, DATE_FORMAT(students.deleted_at, '%d-%m-%Y %T') as deleted_at, users.id as created_by_id, users.username as created_by_username FROM students JOIN users ON users.id = students.created_by WHERE students.users_id = ? AND students.deleted_at is null";
 
     connection.query(queryString, [usersId], function (err, rows) {
         if (err) {
